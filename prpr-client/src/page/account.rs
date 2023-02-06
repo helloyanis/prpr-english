@@ -19,10 +19,10 @@ use std::{future::Future, io::Cursor};
 
 fn validate_username(username: &str) -> Option<&'static str> {
     if !(4..=20).contains(&username.len()) {
-        return Some("用户名长度应介于 4-20 之间");
+        return Some("Username length should be between 4 and 20");
     }
     if username.chars().any(|it| it != '_' && it != '-' && !it.is_alphanumeric()) {
-        return Some("用户名包含非法字符");
+        return Some("Username contains illegal characters");
     }
     None
 }
@@ -47,7 +47,7 @@ impl AccountPage {
             } else {
                 None
             },
-            task_desc: if logged_in { "更新数据".to_owned() } else { String::new() },
+            task_desc: if logged_in { "Update data".to_owned() } else { String::new() },
             email_input: String::new(),
             username_input: String::new(),
             password_input: String::new(),
@@ -72,7 +72,7 @@ impl Page for AccountPage {
                 let desc = &self.task_desc;
                 match result {
                     Err(err) => {
-                        show_error(err.context(format!("{desc}失败")));
+                        show_error(err.context(format!("{desc}failed")));
                     }
                     Ok(user) => {
                         if let Some(user) = user {
@@ -80,9 +80,9 @@ impl Page for AccountPage {
                             get_data_mut().me = Some(user);
                             save_data()?;
                         }
-                        show_message(format!("{desc}成功"));
-                        if desc == "注册" {
-                            show_message("验证信息已发送到邮箱，请验证后登录");
+                        show_message(format!("{desc}successful"));
+                        if desc == "Register" {
+                            show_message("The verification information has been sent to the email, please verify and log in");
                         }
                         self.register = false;
                     }
@@ -97,7 +97,7 @@ impl Page for AccountPage {
                     show_message(error);
                 } else {
                     let user = get_data().me.clone().unwrap();
-                    self.start("更新名称", async move {
+                    self.start("Update the name", async move {
                         Client::update_user(json!({ "username": text })).await?;
                         Ok(Some(User { name: text, ..user }))
                     });
@@ -109,31 +109,31 @@ impl Page for AccountPage {
         if let Some((id, file)) = take_file() {
             if id == "avatar" {
                 let mut load = |path: String| -> Result<()> {
-                    let image = image::load_from_memory(&std::fs::read(path).context("无法读取图片")?)
-                        .context("无法加载图片")?
+                    let image = image::load_from_memory(&std::fs::read(path).context("Unable to read the picture")?)
+                        .context("Unable to load image")?
                         .resize_exact(512, 512, FilterType::CatmullRom);
                     let mut bytes: Vec<u8> = Vec::new();
                     image.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)?;
                     let old_avatar = get_data().me.as_ref().unwrap().avatar.clone();
                     let user = get_data().me.clone().unwrap();
-                    self.start("上传头像", async move {
-                        let file = Client::upload_file("avatar.png", &bytes).await.context("上传头像失败")?;
+                    self.start("Upload an avatar", async move {
+                        let file = Client::upload_file("avatar.png", &bytes).await.context("Failed to upload avatar")?;
                         if let Some(old) = old_avatar {
-                            Client::delete_file(&old.id).await.context("删除原头像失败")?;
+                            Client::delete_file(&old.id).await.context("Failed to delete the original avatar")?;
                         }
                         Client::update_user(json!({ "avatar": {
                                 "id": file.id,
                                 "__type": "File"
                             } }))
                         .await
-                        .context("更新头像失败")?;
+                        .context("Failed to update avatar")?;
                         UserManager::clear_cache(&user.id);
                         Ok(Some(User { avatar: Some(file), ..user }))
                     });
                     Ok(())
                 };
                 if let Err(err) = load(file) {
-                    show_error(err.context("导入头像失败"));
+                    show_error(err.context("Failed to import avatar"));
                 }
             } else {
                 return_file(id, file);
@@ -158,27 +158,27 @@ impl Page for AccountPage {
             let ct = r.center();
             ui.fill_circle(ct.x, ct.y, r.w / 2., (*avatar, r));
         }
-        ui.text(get_data().me.as_ref().map(|it| it.name.as_str()).unwrap_or("[尚未登录]"))
+        ui.text(get_data().me.as_ref().map(|it| it.name.as_str()).unwrap_or("[Not logged in]"))
             .pos(r.right() + 0.02, r.center().y)
             .anchor(0., 0.5)
             .size(0.8)
             .draw();
         ui.dy(r.h + 0.03);
         if get_data().me.is_none() {
-            let r = ui.text("用户名").size(0.4).measure();
+            let r = ui.text("User name").size(0.4).measure();
             ui.dx(r.w);
             if self.register {
-                let r = ui.input("邮箱", &mut self.email_input, ());
+                let r = ui.input("Email", &mut self.email_input, ());
                 ui.dy(r.h + 0.02);
             }
-            let r = ui.input("用户名", &mut self.username_input, ());
+            let r = ui.input("User name", &mut self.username_input, ());
             ui.dy(r.h + 0.02);
-            let r = ui.input("密码", &mut self.password_input, true);
+            let r = ui.input("Password", &mut self.password_input, true);
             ui.dy(r.h + 0.02);
             let labels = if self.register {
-                ["返回", if self.task.is_none() { "注册" } else { "注册中…" }]
+                ["Back", if self.task.is_none() { "Register" } else { "Register in…" }]
             } else {
-                ["注册", if self.task.is_none() { "登录" } else { "登录中…" }]
+                ["Register", if self.task.is_none() { "Login" } else { "Register in…" }]
             };
             let cx = r.right() / 2.;
             let mut r = Rect::new(0., 0., cx - 0.01, r.h);
@@ -194,20 +194,20 @@ impl Page for AccountPage {
                         return Some(error);
                     }
                     if !(6..=26).contains(&password.len()) {
-                        return Some("密码长度应介于 6-26 之间");
+                        return Some("Password length should be between 6 and 26");
                     }
                     if self.register {
                         let email = self.email_input.clone();
                         static EMAIL_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,4}$").unwrap());
                         if !EMAIL_REGEX.is_match(&email) {
-                            return Some("邮箱不合法");
+                            return Some("Email is not legal");
                         }
-                        self.start("注册", async move {
+                        self.start("Register", async move {
                             Client::register(&email, &username, &password).await?;
                             Ok(None)
                         });
                     } else {
-                        self.start("登录", async move {
+                        self.start("Login", async move {
                             let user = Client::login(&username, &password).await?;
                             Ok(Some(user))
                         });
@@ -221,13 +221,13 @@ impl Page for AccountPage {
         } else {
             let cx = 0.2;
             let mut r = Rect::new(0., 0., cx - 0.01, ui.text("呃").size(0.42).measure().h + 0.02);
-            if ui.button("logout", r, "退出登录") && self.task.is_none() {
+            if ui.button("logout", r, "Logout") && self.task.is_none() {
                 get_data_mut().me = None;
                 let _ = save_data();
-                show_message("退出登录成功");
+                show_message("Logout successful");
             }
             r.x = cx + 0.01;
-            if ui.button("edit_name", r, "修改名称") && self.task.is_none() {
+            if ui.button("edit_name", r, "Modify name") && self.task.is_none() {
                 request_input("edit_username", &get_data().me.as_ref().unwrap().name);
             }
         }
