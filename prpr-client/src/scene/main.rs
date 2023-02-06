@@ -193,7 +193,7 @@ impl Scene for MainScene {
         if let Some((.., st, _, true)) = &mut self.shared_state.transit {
             *st = tm.now() as _;
         } else {
-            show_message("欢迎回来");
+            show_message("Welcome back");
         }
         if UPDATE_INFO.fetch_and(false, Ordering::SeqCst) {
             if let Some((None, id, ..)) = self.shared_state.transit {
@@ -299,7 +299,7 @@ impl Scene for MainScene {
                                 .charts_local
                                 .iter()
                                 .position(|it| it.path == path)
-                                .ok_or_else(|| anyhow!("找不到谱面"))?
+                                .ok_or_else(|| anyhow!("Beatmap not found"))?
                         } else {
                             id
                         };
@@ -317,9 +317,9 @@ impl Scene for MainScene {
                         Ok(())
                     })();
                     if let Err(err) = err {
-                        show_error(err.context("删除失败"));
+                        show_error(err.context("Failed to delete"));
                     } else {
-                        show_message("删除成功");
+                        show_message("Successfuly deleted");
                     }
                 }
                 self.shared_state.transit = None;
