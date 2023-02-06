@@ -1,5 +1,5 @@
-在上传前，你需要确认：
-1. 谱面为本人创作，或上传行为已经通过谱师本人同意。如果是第二种情况，需要在谱面简介中注明是代人上传；
-2. 如果是谱面是本人创作，建议使用辨识度高的头像和 ID；如果你在 prpr 使用的头像 ID 与自制谱视频发布平台（具体而言，BiliBili）有较大出入，需要额外标注；
-3. ！禁止违反规则未经谱师同意随意上传谱面，否则可能面临永久禁止上传的惩罚；
-4. 谱面内容（包括音乐、插图、文字等）须符合中华人民共和国其他法律法规，不得违法或包含不良信息。
+Before uploading, you need to confirm that:
+1. The beatmap was created by me, or the act of uploading it has been approved by the scorer. If it is the second case, it needs to be indicated in the beatmap introduction that it is uploaded on behalf of a person;
+2. If the beatmap is created by yourself, it is recommended to use a highly recognizable avatar and ID; If the avatar ID you use in prpr is quite different from the self-made score video publishing platform (specifically, BiliBili), additional annotations are required;
+3. ！ It is forbidden to violate the rules and upload the beatmap without the consent of the scorer, otherwise you may face the penalty of permanent ban on uploading;
+4. The content of the beatmap (including music, illustrations, text, etc.) must comply with other laws and regulations of the People's Republic of China, and must not violate the law or contain bad information.
