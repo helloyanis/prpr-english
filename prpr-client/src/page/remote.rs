@@ -49,7 +49,7 @@ impl RemotePage {
             return;
         }
         state.charts_remote.clear();
-        show_message("正在加载");
+        show_message("Loading");
         self.loading = true;
         let order = self.order_box.to_order();
         self.task_load = Task::new({
@@ -89,7 +89,7 @@ impl RemotePage {
 
 impl Page for RemotePage {
     fn label(&self) -> &'static str {
-        "在线"
+        "Online"
     }
 
     fn update(&mut self, focus: bool, state: &mut SharedState) -> Result<()> {
@@ -108,12 +108,12 @@ impl Page for RemotePage {
             self.loading = false;
             match charts {
                 Ok(charts) => {
-                    show_message("加载完成");
+                    show_message("Loading completed");
                     (state.charts_remote, self.illu_files) = charts.into_iter().unzip();
                 }
                 Err(err) => {
                     self.first_time = true;
-                    show_error(err.context("加载失败"));
+                    show_error(err.context("Load failure"));
                 }
             }
         }
