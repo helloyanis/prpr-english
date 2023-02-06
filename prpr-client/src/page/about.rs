@@ -20,7 +20,8 @@ The default Material Skins used in this software (including note materials and p
 
 prpr is open source software under the GNU General Public License v3.0.
 Test Group：660488396
-GitHub: https://github.com/Mivik/prpr",
+GitHub: https://github.com/Mivik/prpr
+English version GitHub: https://github.com/helloyanis/prpr-english",
                 env!("CARGO_PKG_VERSION")
             ),
         }
