@@ -30,7 +30,7 @@ impl ChartOrder {
 }
 
 const ORDER_NUM: usize = 4;
-const ORDER_LABELS: [&str; ORDER_NUM] = ["从新到旧", "从旧到新", "名字正序", "名字倒序"];
+const ORDER_LABELS: [&str; ORDER_NUM] = ["From new to old", "From old to new", "Alphabetical order", "Reverse alphabetical order"];
 static ORDERS: [(ChartOrder, bool); ORDER_NUM] = [
     (ChartOrder::Default, false),
     (ChartOrder::Default, true),
