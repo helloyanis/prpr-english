@@ -74,13 +74,13 @@ impl Page for LocalPage {
         if let Some(result) = self.import_task.take() {
             match result {
                 Err(err) => {
-                    show_error(err.context("导入失败"));
+                    show_error(err.context("Import failure"));
                 }
                 Ok(chart) => {
                     get_data_mut().charts.push(chart);
                     save_data()?;
                     state.charts_local = load_local(&state.tex, self.order_box.to_order());
-                    show_message("导入成功");
+                    show_message("Imported successfully");
                 }
             }
         }
@@ -109,7 +109,7 @@ impl Page for LocalPage {
                     if chart.illustration_task.is_none() {
                         state.transit = Some((None, id, t, Rect::default(), false));
                     } else {
-                        show_message("尚未加载完成");
+                        show_message("Not yet finished loading");
                     }
                     return Ok(true);
                 }
