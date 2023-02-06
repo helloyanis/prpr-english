@@ -164,7 +164,7 @@ fn create_info_task(path: String, brief: BriefChartInfo) -> Task<ChartInfo> {
         .await;
         match info {
             Err(err) => {
-                show_error(err.context("加载谱面信息失败"));
+                show_error(err.context("Failed to load beatmap information"));
                 brief.into_full()
             }
             Ok(ok) => ChartInfo {
@@ -321,7 +321,7 @@ impl SongScene {
                 }
                 let r = ui
                     .text(format!(
-                        "{}\n{}\n难度：{} ({:.1})\n曲师：{}\n插图：{}",
+                        "{}\n{}\nDifficulty：{} ({:.1})\nComposer：{}\nIllustration：{}",
                         self.chart.info.intro,
                         self.chart.info.tags.iter().map(|it| format!("#{it}")).join(" "),
                         self.chart.info.level,
@@ -369,11 +369,11 @@ impl SongScene {
         let r = ui.text("功能").size(0.7).draw();
         ui.dy(r.h + 0.03);
         let r = Rect::new(0., 0., width, 0.07);
-        if ui.button("tweak_offset", r, "调整延迟") {
+        if ui.button("tweak_offset", r, "Adjust offset") {
             self.play_chart(GameMode::TweakOffset).unwrap();
         }
         ui.dy(r.h + 0.01);
-        if ui.button("exercise", r, "分段练习") {
+        if ui.button("exercise", r, "Segmented exercises") {
             self.play_chart(GameMode::Exercise).unwrap();
         }
     }
@@ -387,7 +387,7 @@ impl SongScene {
         let hpad = 0.01;
         let dx = width / 3.;
         let mut r = Rect::new(hpad, ui.top * 2. - h + vpad, dx - hpad * 2., h - vpad * 2.);
-        if ui.button("cancel", r, "取消") {
+        if ui.button("cancel", r, "Cancel") {
             self.side_enter_time = -t;
         }
         r.x += dx;
@@ -397,20 +397,20 @@ impl SongScene {
             if self.upload_task.is_some() {
                 UPLOAD_STATUS.lock().unwrap().clone().unwrap()
             } else {
-                "上传".to_owned()
+                "Upload".to_owned()
             },
         ) && self.upload_task.is_none()
             && self.save_task.is_none()
         {
             if get_data().me.is_none() {
-                show_message("请先登录！");
+                show_message("Please login first！");
             } else if self.chart.path.starts_with(':') {
-                show_message("不能上传内置谱面");
+                show_message("Built-in beatmaps cannot be uploaded");
             } else if self.chart.info.uploader.is_some() {
-                show_message("不能上传下载的谱面");
+                show_message("Downloaded beatmaps cannot be uploaded");
             } else if !CONFIRM_UPLOAD.load(Ordering::SeqCst) {
-                Dialog::plain("上传须知", include_str!("upload_info.txt"))
-                    .buttons(vec!["再想想".to_owned(), "确认上传".to_owned()])
+                Dialog::plain("Upload instructions", include_str!("upload_info.txt"))
+                    .buttons(vec!["Think again".to_owned(), "Confirm Upload".to_owned()])
                     .listener(|pos| {
                         if pos == 1 {
                             CONFIRM_UPLOAD.store(true, Ordering::SeqCst);
@@ -420,10 +420,10 @@ impl SongScene {
             }
         }
         r.x += dx;
-        if ui.button("save", r, if self.save_task.is_some() { "保存中…" } else { "保存" }) && self.upload_task.is_none() && self.save_task.is_none()
+        if ui.button("save", r, if self.save_task.is_some() { "Saving…" } else { "Saved" }) && self.upload_task.is_none() && self.save_task.is_none()
         {
             if self.chart.path.starts_with(':') {
-                show_message("不能更改内置谱面");
+                show_message("You cannot change the built-in beatmap");
             } else {
                 self.save_edit();
             }
@@ -435,13 +435,13 @@ impl SongScene {
             ui.dx(0.02);
             ui.dy(h);
             let r = Rect::new(0., 0., EDIT_CHART_INFO_WIDTH - 0.2, 0.06);
-            if ui.button("fix", r, "自动修复谱面") {
+            if ui.button("fix", r, "Beatmaps automatic fix") {
                 if let Err(err) =
                     fs::fix_info(fs_from_path(&self.chart.path).unwrap().deref_mut(), &mut self.info_edit.as_mut().unwrap().info).block_on()
                 {
-                    show_error(err.context("修复失败"));
+                    show_error(err.context("Repair failed"));
                 } else {
-                    show_message("修复成功");
+                    show_message("Repair successful");
                 }
             }
             h += r.h + 0.1;
@@ -456,10 +456,10 @@ impl SongScene {
             let edit = edit.clone();
             self.save_task = Some(Task::new(async move {
                 let mut fs = fs_from_path(&path)?;
-                let patches = edit.to_patches().await.context("加载文件失败")?;
+                let patches = edit.to_patches().await.context("Failed to load file")?;
                 if let Some(zip) = fs.as_any().downcast_mut::<ZipFileSystem>() {
-                    let bytes = update_zip(&mut zip.0.lock().unwrap(), patches).context("写入配置文件失败")?;
-                    std::fs::write(format!("{}/{}", dir::charts()?, path), bytes).context("保存文件失败")?;
+                    let bytes = update_zip(&mut zip.0.lock().unwrap(), patches).context("Failed to write to configuration file")?;
+                    std::fs::write(format!("{}/{}", dir::charts()?, path), bytes).context("Failed to save file")?;
                 } else {
                     unreachable!();
                 }
@@ -483,10 +483,10 @@ impl SongScene {
         dir::downloaded_charts()?;
         let path = format!("download/{id}");
         if get_data().charts.iter().any(|it| it.path == path) {
-            show_message("已经下载过"); // TODO redirect instead of showing this
+            show_message("Already downloaded"); // TODO redirect instead of showing this
             return Ok(());
         }
-        show_message("正在下载");
+        show_message("Downloading");
         let url = self.chart.path.clone();
         let chart = LocalChart {
             info: self.chart.info.clone(),
@@ -501,12 +501,12 @@ impl SongScene {
                 let path = format!("{}/{}", dir::downloaded_charts()?, id);
                 async move {
                     let mut file = tokio::fs::File::create(path).await?;
-                    let res = reqwest::get(url).await.context("请求失败")?;
+                    let res = reqwest::get(url).await.context("The request failed")?;
                     let size = res.content_length();
                     let mut stream = res.bytes_stream();
                     let mut count = 0;
                     while let Some(chunk) = stream.next().await {
-                        let chunk = chunk.context("下载失败")?;
+                        let chunk = chunk.context("Download failed")?;
                         file.write_all(&chunk).await?;
                         count += chunk.len() as u64;
                         if let Some(size) = size {
@@ -531,7 +531,7 @@ impl SongScene {
                 mode,
                 info,
                 Config {
-                    player_name: get_data().me.as_ref().map(|it| it.name.clone()).unwrap_or_else(|| "游客".to_string()),
+                    player_name: get_data().me.as_ref().map(|it| it.name.clone()).unwrap_or_else(|| "Guest".to_string()),
                     res_pack_path: get_data()
                         .config
                         .res_pack_path
@@ -553,7 +553,7 @@ impl Scene for SongScene {
     fn on_result(&mut self, _tm: &mut TimeManager, result: Box<dyn std::any::Any>) -> Result<()> {
         let result = match result.downcast::<anyhow::Error>() {
             Ok(error) => {
-                show_error(error.context("加载谱面失败"));
+                show_error(error.context("Failed to load the beatmap"));
                 return Ok(());
             }
             Err(res) => res,
@@ -671,12 +671,12 @@ impl Scene for SongScene {
         if let Some(task) = &mut self.save_task {
             if let Some(result) = task.take() {
                 if let Err(err) = result {
-                    show_error(err.context("保存失败"));
+                    show_error(err.context("Save failed"));
                 } else {
                     if self.info_edit.as_ref().unwrap().illustration.is_some() {
                         self.illustration_task = Some(illustration_task(self.chart.path.clone()));
                     }
-                    show_message("保存成功");
+                    show_message("Saved successfully");
                 }
                 self.save_task = None;
             }
@@ -684,9 +684,9 @@ impl Scene for SongScene {
         if let Some(task) = &mut self.upload_task {
             if let Some(result) = task.take() {
                 if let Err(err) = result {
-                    show_error(err.context("上传失败"));
+                    show_error(err.context("Upload failed"));
                 } else {
-                    show_message("上传成功，请等待审核！");
+                    show_message("The upload is successful, please wait for review！");
                 }
                 self.upload_task = None;
             }
@@ -695,7 +695,7 @@ impl Scene for SongScene {
             if let Some(result) = task.take() {
                 match result {
                     Err(err) => {
-                        show_error(err.context("加载插图失败"));
+                        show_error(err.context("Failed to load illustration"));
                         self.illustration = BLACK_TEXTURE.clone();
                         *UPDATE_TEXTURE.lock().unwrap() = Some((BLACK_TEXTURE.clone(), BLACK_TEXTURE.clone()));
                     }
@@ -713,7 +713,7 @@ impl Scene for SongScene {
                 if let Some(result) = task.take() {
                     match result {
                         Err(err) => {
-                            show_error(err.context("加载插图失败"));
+                            show_error(err.context("Failed to load illustration"));
                         }
                         Ok(image) => {
                             self.illustration = image.into();
@@ -725,26 +725,26 @@ impl Scene for SongScene {
             }
         }
         if CONFIRM_UPLOAD.fetch_and(false, Ordering::SeqCst) {
-            *UPLOAD_STATUS.lock().unwrap() = Some("上传中…".to_owned());
+            *UPLOAD_STATUS.lock().unwrap() = Some("Uploading…".to_owned());
             CONFIRM_UPLOAD.store(false, Ordering::SeqCst);
             let info = self.info_edit.as_ref().unwrap().info.clone();
             let path = self.chart.path.clone();
             let user_id = get_data().me.as_ref().unwrap().id.clone();
             self.upload_task = Some(Task::new(async move {
-                let chart_bytes = tokio::fs::read(format!("{}/{}", dir::charts()?, path)).await.context("读取文件失败")?;
+                let chart_bytes = tokio::fs::read(format!("{}/{}", dir::charts()?, path)).await.context("Failed to read file")?;
                 if chart_bytes.len() > CHART_LIMIT {
-                    bail!("谱面文件过大");
+                    bail!("The beatmap file is too large");
                 }
                 let mut fs = fs_from_path(&path)?;
-                let image = fs.load_file(&info.illustration).await.context("读取插图失败")?;
+                let image = fs.load_file(&info.illustration).await.context("Failed to read illustration")?;
                 if image.len() > IMAGE_LIMIT {
-                    bail!("插图文件过大");
+                    bail!("The illustration file is too large");
                 }
-                *UPLOAD_STATUS.lock().unwrap() = Some("上传谱面中…".to_owned());
-                let file = Client::upload_file("chart.zip", &chart_bytes).await.context("上传谱面失败")?;
-                *UPLOAD_STATUS.lock().unwrap() = Some("上传插图中…".to_owned());
-                let illustration = Client::upload_file("illustration.jpg", &image).await.context("上传插图失败")?;
-                *UPLOAD_STATUS.lock().unwrap() = Some("保存中…".to_owned());
+                *UPLOAD_STATUS.lock().unwrap() = Some("Uploading the beatmap…".to_owned());
+                let file = Client::upload_file("chart.zip", &chart_bytes).await.context("Failed to upload beatmap")?;
+                *UPLOAD_STATUS.lock().unwrap() = Some("Uploading the illustration…".to_owned());
+                let illustration = Client::upload_file("illustration.jpg", &image).await.context("Failed to upload illustration")?;
+                *UPLOAD_STATUS.lock().unwrap() = Some("Saving…".to_owned());
                 let item = LCChartItem {
                     id: None,
                     info: BriefChartInfo {
@@ -768,7 +768,7 @@ impl Scene for SongScene {
         for (name, res) in downloaded {
             match res {
                 Err(err) => {
-                    show_error(err.context(format!("{name} 下载失败")));
+                    show_error(err.context(format!("{name} Download failed")));
                 }
                 Ok(chart) => {
                     self.chart.info = chart.info.clone();
@@ -778,7 +778,7 @@ impl Scene for SongScene {
                     save_data()?;
                     SHOULD_UPDATE.store(true, Ordering::SeqCst);
                     self.remote = false;
-                    show_message(format!("{name} 下载完成"));
+                    show_message(format!("{name} The download is complete"));
                 }
             }
         }
