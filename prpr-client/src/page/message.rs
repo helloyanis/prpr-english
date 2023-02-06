@@ -64,7 +64,7 @@ impl Page for MessagePage {
                         self.messages = msgs.into_iter().map(|it| (it, RectButton::new())).collect();
                     }
                     Err(err) => {
-                        show_error(err.context("加载消息失败"));
+                        show_error(err.context("Failed to load message"));
                     }
                 }
                 self.load_task = None;
@@ -147,7 +147,7 @@ impl Page for MessagePage {
                 let c = Color::new(1., 1., 1., 0.6);
                 let r = ui.text(&msg.author).size(0.3).color(c).draw();
                 let r = ui
-                    .text(&format!("更新于 {}", msg.updated_at.with_timezone(&Local).format("%Y-%m-%d %H:%M")))
+                    .text(&format!("Updated on {}", msg.updated_at.with_timezone(&Local).format("%Y-%m-%d %H:%M")))
                     .size(0.3)
                     .pos(r.w + 0.01, 0.)
                     .color(c)
